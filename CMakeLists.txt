@@ -27,7 +27,7 @@ ELSE(WIN32)
     find_package(OpenCV REQUIRED)
 ENDIF(WIN32)
 
-set(GCC_COVERAGE_COMPILE_FLAGS "-std=c++11")
+set(GCC_COVERAGE_COMPILE_FLAGS "-std=c++17")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 # create individual projects

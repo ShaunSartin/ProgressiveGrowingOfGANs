@@ -66,7 +66,6 @@ cv::Mat nonoverlap_compress_img(cv::Mat img_in, int window_length)
 		int output_col = 0;
 		for(int col = 0; col < col_count - (window_length - 1); col = col + window_length)
 		{
-			//std::cout << "Working on: (" << output_row << ", " << output_col << ")" << std::endl; 
 			std::vector<int> red_vals;
 			std::vector<int> green_vals;
 			std::vector<int> blue_vals;
@@ -94,14 +93,13 @@ cv::Mat nonoverlap_compress_img(cv::Mat img_in, int window_length)
 			output_col++;
 		}
 
-		if(row % 1  == 0)
+		if(row % 100  == 0)
 		{
-			float completion = row;
-			std::cout << completion << std::endl;
+			std::cout << row << "/" << row_count - (window_length - 1) << std::endl;
 		}
 		output_row++;
 	}
-
+	
 	return img_out;
 
 }
@@ -173,11 +171,6 @@ int main(int argc, char **argv)
 	std::string inputFileName;
 	int windowSize;
 
-	/*
-	int myints[] = {5, 2, 3, 1, 4, 60};
-	std::vector<int> example (myints, myints + sizeof(myints) / sizeof(int));
-	std::cout << "MEDIAN: " << vector_median(example) << std::endl;
-	*/
 
 	if(argc > 2)
 	{
@@ -192,8 +185,9 @@ int main(int argc, char **argv)
 
 	cv::Mat image;
 	image = cv::imread(inputFileName, CV_LOAD_IMAGE_COLOR);
-	cv::Mat output_image((image.rows / windowSize), (image.cols / windowSize), CV_8UC3);
-    	
+	cv::Mat output_image((image.rows / windowSize), (image.cols / windowSize), CV_8UC3);    	
+
+
 	// check for file error
     	if(!image.data)
 	{
@@ -201,19 +195,15 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	/*
-	cv::imshow("Original Image", image);
-	cv::waitKey(0);	
-	*/
+	std::cout << "Now Compressing Image: " << inputFileName << std::endl;
+	while (output_image.rows >= 4)
+	{
+		output_image = nonoverlap_compress_img(image, windowSize);
+		std::string outputFileName = "img" + std::to_string(output_image.rows) + "x" + std::to_string(output_image.cols) + ".jpg";
+		cv::imwrite(outputFileName, output_image);
 
-	std::cout << "Now Compressing Image" << std::endl;
-	output_image = nonoverlap_compress_img(image, windowSize);
-
-	/*
-	cv::imshow("Compressed Image", output_image);
-	cv::waitKey(0);
-	*/
-	std::string outputFileName = "img" + std::to_string(output_image.rows) + "x" + std::to_string(output_image.cols) + ".jpg";
-	
-	cv::imwrite(outputFileName, output_image);		
+		//Reassign image to be the current output and output_image to be the next output
+		cv::resize(image, image, cv::Size(output_image.rows, output_image.cols));
+		output_image.create((output_image.rows / 2), (output_image.cols / 2), image.depth());	
+	}	
 }
